@@ -1,36 +1,32 @@
-import puppeteer from 'puppeteer';
+import Dotenv from 'dotenv';
 
-import { scrollToBottom } from './scrollToBottom';
+import { getFullscreenCapture } from './getFullscreenCapture';
+import { imageDiff } from './imageDiff';
 
-async function wait(msec: number): Promise<{}> {
-  return new Promise(resolve => setTimeout(resolve, msec));
-}
+Dotenv.load();
 
-async function getScreenshot(page: puppeteer.Page) {
-  await page.screenshot({ path: 'testing-blog.png', fullPage: true });
-  console.log('save screenshot');
+async function createCaptures(fileinfo: Array<{ filename: string; url: string }>) {
+  await Promise.all(
+    fileinfo.map(({ filename, url }) =>
+      getFullscreenCapture({
+        url,
+        filename,
+        width: 1200,
+        height: 800,
+      }),
+    ),
+  );
 }
 
 async function main() {
-  const viewportWidth = 1200;
-  const viewportHeight = 800;
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
-  page.setViewport({ width: viewportWidth, height: viewportHeight });
-  await page.setExtraHTTPHeaders({
-    Authorization: `asic ${new Buffer('sbi:test').toString('base64')}`,
-  });
-  // await page.goto('https://www.nict.go.jp/JST/JST5.html', { waitUntil: 'networkidle2' });
-  // await page.goto('https://news.ycombinator.com', { waitUntil: 'networkidle2' });
-  // await page.goto('http://sbi.framelunch.com/business/', { waitUntil: 'networkidle2' });
-  // await page.goto('https://contents.netbk.co.jp/business/', { waitUntil: 'networkidle2' });
-  await page.goto('http://localhost:9012/business/', { waitUntil: 'networkidle2' });
+  const currentFilename = `${process.env.IMAGE_PATH}/${process.env.CURRENT_IMAGE}`;
+  const currentUrl = process.env.CURRENT_URL || '';
+  const targetFilename = `${process.env.IMAGE_PATH}/${process.env.TARGET_IMAGE}`;
+  const targetUrl = process.env.TARGET_URL || '';
+  const output = `${process.env.IMAGE_PATH}/${process.env.RESULT_KEY}`;
 
-  await wait(5000); // 適当
-  await scrollToBottom(page, viewportHeight);
-
-  await getScreenshot(page);
-  await browser.close();
+  await createCaptures([{ filename: currentFilename, url: currentUrl }, { filename: targetFilename, url: targetUrl }]);
+  await imageDiff(currentFilename, targetFilename, output);
 }
 
 main()
