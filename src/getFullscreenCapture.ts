@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs-extra';
 import puppeteer from 'puppeteer';
 
 import { scrollToBottom } from './scrollToBottom';
@@ -28,6 +30,9 @@ export async function getFullscreenCapture({ url, filename, width, height, user,
 
   await wait(5000); // 適当
   await scrollToBottom(page, height);
+
+  const pathname = path.dirname(path.join(process.cwd(), filename));
+  fs.mkdirpSync(pathname);
 
   await page.screenshot({ path: filename, fullPage: true });
   console.log('save screenshot');

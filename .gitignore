@@ -209,4 +209,5 @@ $RECYCLE.BIN/
 /.idea
 src/**/*.js
 src/**/*.d.ts
-*.png
+/diff
+
