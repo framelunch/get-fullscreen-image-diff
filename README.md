@@ -1,8 +1,10 @@
-# npm template TypeScript
+# get-fullscreen-image-diff
+
+## How to use
 
 ```bash
 yarn install
+cp -p .env.example .env
 yarn start
-yarn test
-yarn build
+open diff/
 ```
